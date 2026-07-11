@@ -1,2 +1,4 @@
 # La_Raya
-Allows to track work shifts, income, absences on a daily, biweekly and monthly basis. With real time tracking and graphs.
+HTML. Allows to track work shifts, income, absences on a daily, biweekly and monthly basis. With real time tracking and graphs.
+Gives option to export the file, which you'd have to import every time you open it, but sometimes it seems to not be necessary , just save or finish shift and close tab, shoulld be updated by next time you open it.
+Open to suggestions, just made for fun.
