@@ -5,4 +5,4 @@ Open to suggestions, just made for fun.
 Also, there is info there already, just to give you idea of how it looks, you can delete it all.
 
 ## Patient Management System
-A separate desktop app lives in [`patient_management/`](patient_management/README.md) — a Python/Tkinter/SQLite patient management program (registry, visits, diagnoses, prescriptions, billing, and more) that can be packaged into a standalone executable. See its README for setup and build instructions.
+Moved to its own repository: [NocylOni/Px_Management](https://github.com/NocylOni/Px_Management) — a Python/Tkinter/SQLite patient management program (registry, visits, diagnoses, prescriptions, billing, and more) that can be packaged into a standalone executable.
