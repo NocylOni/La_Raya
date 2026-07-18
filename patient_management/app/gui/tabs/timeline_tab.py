@@ -4,6 +4,16 @@ from __future__ import annotations
 from tkinter import ttk
 
 from app.db.dao import timeline as timeline_dao
+from app.i18n import t
+
+_EVENT_TYPE_KEYS = {
+    "visit": "timeline.type.visit",
+    "diagnosis": "timeline.type.diagnosis",
+    "prescription": "timeline.type.prescription",
+    "order": "timeline.type.order",
+    "result": "timeline.type.result",
+    "appointment": "timeline.type.appointment",
+}
 
 
 class TimelineTab(ttk.Frame):
@@ -18,11 +28,13 @@ class TimelineTab(ttk.Frame):
         columns = ("timestamp", "type", "summary")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
         for key, header, width in (
-            ("timestamp", "Date/Time", 140), ("type", "Event", 110), ("summary", "Summary", 500),
+            ("timestamp", t("timeline.col_datetime"), 140),
+            ("type", t("timeline.col_event"), 130),
+            ("summary", t("timeline.col_summary"), 500),
         ):
             self.tree.heading(key, text=header)
             self.tree.column(key, width=width, anchor="w")
-        self.tree.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+        self.tree.grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
         scroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
         scroll.grid(row=0, column=1, sticky="ns")
@@ -41,8 +53,10 @@ class TimelineTab(ttk.Frame):
         if pid is None:
             return
         for event in timeline_dao.get_timeline(self.ctx.db, pid):
+            event_type = event["type"]
             self.tree.insert(
                 "", "end",
-                values=(event["timestamp"], event["type"].title(), event["summary"]),
-                tags=(event["type"],),
+                values=(event["timestamp"], t(_EVENT_TYPE_KEYS.get(event_type, event_type)),
+                        event["summary"]),
+                tags=(event_type,),
             )

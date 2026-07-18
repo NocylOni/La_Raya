@@ -5,6 +5,7 @@ from tkinter import messagebox, ttk
 
 from app.db.dao import prescriptions as prescriptions_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
 from app.logic import alerts as alerts_logic
 
 
@@ -19,33 +20,36 @@ class PrescriptionsTab(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.panel = RecordPanel(
             self,
-            columns=[("medication_name", "Medication"), ("dosage", "Dosage"),
-                     ("frequency", "Frequency"), ("status", "Status"),
-                     ("refills_remaining", "Refills Left")],
+            columns=[("medication_name", t("rx.col_medication")), ("dosage", t("rx.col_dosage")),
+                     ("frequency", t("rx.col_frequency")), ("status", t("rx.col_status")),
+                     ("refills_remaining", t("rx.col_refills_left"))],
             fields=[
-                FieldSpec("medication_name", "Medication Name"),
-                FieldSpec("dosage", "Dosage"),
-                FieldSpec("route", "Route"),
-                FieldSpec("frequency", "Frequency"),
-                FieldSpec("duration", "Duration"),
-                FieldSpec("quantity", "Quantity"),
-                FieldSpec("refills", "Refills Authorized"),
-                FieldSpec("prescriber", "Prescriber"),
-                FieldSpec("status", "Status", kind="combo",
-                          options=["active", "completed", "cancelled"]),
-                FieldSpec("start_date", "Start Date"),
-                FieldSpec("end_date", "End Date"),
-                FieldSpec("notes", "Notes", kind="text"),
+                FieldSpec("medication_name", t("rx.medication_name")),
+                FieldSpec("dosage", t("rx.dosage")),
+                FieldSpec("route", t("rx.route")),
+                FieldSpec("frequency", t("rx.frequency")),
+                FieldSpec("duration", t("rx.duration")),
+                FieldSpec("quantity", t("rx.quantity")),
+                FieldSpec("refills", t("rx.refills")),
+                FieldSpec("prescriber", t("rx.prescriber")),
+                FieldSpec("status", t("rx.status"), kind="combo",
+                          options=[t("rx.status.active"), t("rx.status.completed"),
+                                   t("rx.status.cancelled")],
+                          option_values=["active", "completed", "cancelled"]),
+                FieldSpec("start_date", t("rx.start_date")),
+                FieldSpec("end_date", t("rx.end_date")),
+                FieldSpec("notes", t("rx.notes"), kind="text"),
             ],
             on_list=self._list_prescriptions,
             on_create=self._create_prescription,
             on_update=self._update_prescription,
             on_delete=prescriptions_dao.delete_prescription,
         )
-        self.panel.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
 
-        ttk.Button(self, text="Refill Selected", command=self._refill_selected).grid(
-            row=1, column=0, sticky="w", padx=4, pady=(0, 4)
+        ttk.Button(self, text=t("rx.refill_selected"), style="outline.TButton",
+                   command=self._refill_selected).grid(
+            row=1, column=0, sticky="w", padx=6, pady=(0, 6)
         )
 
     def load_patient(self):
@@ -66,18 +70,16 @@ class PrescriptionsTab(ttk.Frame):
         if check["has_alerts"]:
             lines = []
             for item in check["interactions"]:
-                lines.append(f"Interaction ({item['severity']}) with {item['drug_b']}: "
-                             f"{item['description']}")
+                lines.append(t("rx.alert_interaction", severity=item["severity"],
+                                drug=item["drug_b"], description=item["description"]))
             for item in check["allergy_conflicts"]:
-                lines.append(f"Allergy conflict: patient is allergic to {item['substance']} "
-                             f"({item['severity']})")
+                lines.append(t("rx.alert_allergy", substance=item["substance"],
+                                severity=item["severity"]))
             proceed = messagebox.askyesno(
-                "Clinical Alert",
-                "The following alerts were found:\n\n" + "\n".join(lines) +
-                "\n\nPrescribe anyway?",
+                t("rx.alert_title"), t("rx.alert_question", lines="\n".join(lines)),
             )
             if not proceed:
-                raise ValueError("Prescription cancelled due to clinical alert")
+                raise ValueError(t("rx.cancelled_by_alert"))
 
         rx_id = prescriptions_dao.create_prescription(self.ctx.db, pid, medication_name, **data)
         self.ctx.audit("CREATE_PRESCRIPTION", "prescription", rx_id, medication_name)
@@ -99,4 +101,4 @@ class PrescriptionsTab(ttk.Frame):
             self.ctx.audit("REFILL_PRESCRIPTION", "prescription", rx_id)
             self.panel.refresh()
         else:
-            messagebox.showinfo("No refills", "No refills remaining for this prescription.")
+            messagebox.showinfo(t("rx.no_refills_title"), t("rx.no_refills_message"))

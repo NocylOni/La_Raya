@@ -5,6 +5,7 @@ from tkinter import ttk
 
 from app.db.dao import appointments as appointments_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
 
 
 class AppointmentsTab(ttk.Frame):
@@ -18,23 +19,25 @@ class AppointmentsTab(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.panel = RecordPanel(
             self,
-            columns=[("appt_datetime", "Date/Time"), ("provider", "Provider"),
-                     ("reason", "Reason"), ("status", "Status")],
+            columns=[("appt_datetime", t("appt.col_datetime")), ("provider", t("appt.col_provider")),
+                     ("reason", t("appt.col_reason")), ("status", t("appt.col_status"))],
             fields=[
-                FieldSpec("appt_datetime", "Date/Time (YYYY-MM-DD HH:MM)"),
-                FieldSpec("provider", "Provider"),
-                FieldSpec("duration_minutes", "Duration (min)"),
-                FieldSpec("reason", "Reason"),
-                FieldSpec("status", "Status", kind="combo",
-                          options=["scheduled", "completed", "cancelled", "no-show"]),
-                FieldSpec("notes", "Notes", kind="text"),
+                FieldSpec("appt_datetime", t("appt.datetime")),
+                FieldSpec("provider", t("appt.provider")),
+                FieldSpec("duration_minutes", t("appt.duration")),
+                FieldSpec("reason", t("appt.reason")),
+                FieldSpec("status", t("appt.status"), kind="combo",
+                          options=[t("appt_status.scheduled"), t("appt_status.completed"),
+                                   t("appt_status.cancelled"), t("appt_status.no_show")],
+                          option_values=["scheduled", "completed", "cancelled", "no-show"]),
+                FieldSpec("notes", t("appt.notes"), kind="text"),
             ],
             on_list=self._list_appointments,
             on_create=self._create_appointment,
             on_update=self._update_appointment,
             on_delete=appointments_dao.delete_appointment,
         )
-        self.panel.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
 
     def load_patient(self):
         self.panel.refresh()

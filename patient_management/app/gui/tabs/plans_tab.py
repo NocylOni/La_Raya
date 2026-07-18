@@ -5,6 +5,7 @@ from tkinter import ttk
 
 from app.db.dao import plans as plans_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
 
 
 class PlansTab(ttk.Frame):
@@ -18,22 +19,24 @@ class PlansTab(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.panel = RecordPanel(
             self,
-            columns=[("therapy", "Therapy"), ("referral_to", "Referral"),
-                     ("follow_up_date", "Follow-up"), ("status", "Status")],
+            columns=[("therapy", t("plans.col_therapy")), ("referral_to", t("plans.col_referral")),
+                     ("follow_up_date", t("plans.col_follow_up")), ("status", t("plans.col_status"))],
             fields=[
-                FieldSpec("therapy", "Therapy / Intervention"),
-                FieldSpec("referral_to", "Referral To"),
-                FieldSpec("follow_up_date", "Follow-up Date"),
-                FieldSpec("instructions", "Patient Instructions", kind="text"),
-                FieldSpec("goals", "Goals", kind="text"),
-                FieldSpec("status", "Status", kind="combo", options=["open", "completed"]),
+                FieldSpec("therapy", t("plans.therapy")),
+                FieldSpec("referral_to", t("plans.referral_to")),
+                FieldSpec("follow_up_date", t("plans.follow_up_date")),
+                FieldSpec("instructions", t("plans.instructions"), kind="text"),
+                FieldSpec("goals", t("plans.goals"), kind="text"),
+                FieldSpec("status", t("plans.status"), kind="combo",
+                          options=[t("plan_status.open"), t("plan_status.completed")],
+                          option_values=["open", "completed"]),
             ],
             on_list=self._list_plans,
             on_create=self._create_plan,
             on_update=self._update_plan,
             on_delete=plans_dao.delete_plan,
         )
-        self.panel.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
 
     def load_patient(self):
         self.panel.refresh()

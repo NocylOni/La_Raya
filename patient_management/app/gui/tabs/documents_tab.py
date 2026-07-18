@@ -9,6 +9,17 @@ from tkinter import filedialog, messagebox, ttk
 
 from app.db.dao import documents as documents_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
+
+_DOC_TYPE_KEYS = {
+    "referral": "doc_type.referral",
+    "discharge_summary": "doc_type.discharge_summary",
+    "consent": "doc_type.consent",
+    "scan": "doc_type.scan",
+    "image": "doc_type.image",
+    "lab_report": "doc_type.lab_report",
+    "other": "doc_type.other",
+}
 
 
 class DocumentsTab(ttk.Frame):
@@ -22,34 +33,39 @@ class DocumentsTab(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
 
+        doc_type_labels = [t(key) for key in _DOC_TYPE_KEYS.values()]
+        doc_type_values = list(_DOC_TYPE_KEYS.keys())
+
         toolbar = ttk.Frame(self)
-        toolbar.grid(row=0, column=0, sticky="ew", padx=4, pady=(4, 0))
-        ttk.Button(toolbar, text="Choose File...", command=self._choose_file).pack(side="left")
-        self.file_label = ttk.Label(toolbar, text="(no file selected)")
-        self.file_label.pack(side="left", padx=6)
-        ttk.Button(toolbar, text="Open Selected Document", command=self._open_selected).pack(
-            side="right"
-        )
+        toolbar.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 0))
+        ttk.Button(toolbar, text=t("docs.choose_file"), style="outline.TButton",
+                   command=self._choose_file).pack(side="left")
+        self.file_label = ttk.Label(toolbar, text=t("docs.no_file_selected"))
+        self.file_label.pack(side="left", padx=8)
+        ttk.Button(toolbar, text=t("docs.open_selected"), style="outline.TButton",
+                   command=self._open_selected).pack(side="right")
 
         self.panel = RecordPanel(
             self,
-            columns=[("title", "Title"), ("doc_type", "Type"), ("uploaded_at", "Uploaded")],
+            columns=[("title", t("docs.col_title")), ("doc_type", t("docs.col_type")),
+                     ("uploaded_at", t("docs.col_uploaded"))],
             fields=[
-                FieldSpec("title", "Title"),
-                FieldSpec("doc_type", "Type", kind="combo", options=list(documents_dao.DOC_TYPES)),
-                FieldSpec("uploaded_by", "Uploaded By"),
-                FieldSpec("notes", "Notes", kind="text"),
+                FieldSpec("title", t("docs.title")),
+                FieldSpec("doc_type", t("docs.type"), kind="combo",
+                          options=doc_type_labels, option_values=doc_type_values),
+                FieldSpec("uploaded_by", t("docs.uploaded_by")),
+                FieldSpec("notes", t("docs.notes"), kind="text"),
             ],
             on_list=self._list_documents,
             on_create=self._create_document,
             on_delete=self._delete_document,
         )
-        self.panel.grid(row=1, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=1, column=0, sticky="nsew", padx=6, pady=6)
 
     def load_patient(self):
         self.panel.refresh()
         self._pending_file_path = None
-        self.file_label.configure(text="(no file selected)")
+        self.file_label.configure(text=t("docs.no_file_selected"))
 
     def _choose_file(self):
         path = filedialog.askopenfilename()
@@ -75,7 +91,7 @@ class DocumentsTab(ttk.Frame):
         )
         self.ctx.audit("ADD_DOCUMENT", "document", doc_id, title)
         self._pending_file_path = None
-        self.file_label.configure(text="(no file selected)")
+        self.file_label.configure(text=t("docs.no_file_selected"))
         return doc_id
 
     def _delete_document(self, doc_id):
@@ -87,11 +103,11 @@ class DocumentsTab(ttk.Frame):
             return
         doc = documents_dao.get_document(self.ctx.db, int(selection[0]))
         if doc is None or not doc["file_path"]:
-            messagebox.showinfo("No file", "This document has no attached file.")
+            messagebox.showinfo(t("docs.no_file_title"), t("docs.no_file_message"))
             return
         path = doc["file_path"]
         if not os.path.exists(path):
-            messagebox.showerror("Missing file", f"File not found on disk:\n{path}")
+            messagebox.showerror(t("docs.missing_file_title"), t("docs.missing_file_message", path=path))
             return
         try:
             if platform.system() == "Windows":
@@ -101,4 +117,4 @@ class DocumentsTab(ttk.Frame):
             else:
                 subprocess.run(["xdg-open", path], check=False)
         except Exception as exc:  # noqa: BLE001
-            messagebox.showerror("Could not open file", str(exc))
+            messagebox.showerror(t("docs.open_error_title"), str(exc))

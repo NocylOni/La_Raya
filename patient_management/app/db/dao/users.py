@@ -30,7 +30,8 @@ class AuthResult:
 
 
 def create_user(
-    db: Database, username: str, password: str, full_name: str, role: str = "clinician"
+    db: Database, username: str, password: str, full_name: str, role: str = "clinician",
+    language: str = "es",
 ) -> int:
     if role not in ROLES:
         raise ValueError(f"Unknown role: {role}")
@@ -39,9 +40,9 @@ def create_user(
     salt = _make_salt()
     pw_hash = _hash_password(password, salt)
     return db.execute(
-        "INSERT INTO users(username, password_hash, salt, full_name, role) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (username.strip(), pw_hash, salt, full_name.strip(), role),
+        "INSERT INTO users(username, password_hash, salt, full_name, role, language) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (username.strip(), pw_hash, salt, full_name.strip(), role, language),
     )
 
 
@@ -73,9 +74,13 @@ def set_active(db: Database, user_id: int, active: bool) -> None:
     db.execute("UPDATE users SET active = ? WHERE id = ?", (1 if active else 0, user_id))
 
 
+def set_language(db: Database, user_id: int, language: str) -> None:
+    db.execute("UPDATE users SET language = ? WHERE id = ?", (language, user_id))
+
+
 def list_users(db: Database) -> list:
-    return db.query("SELECT id, username, full_name, role, active, created_at, last_login "
-                     "FROM users ORDER BY username")
+    return db.query("SELECT id, username, full_name, role, active, language, created_at, "
+                     "last_login FROM users ORDER BY username")
 
 
 def get_user(db: Database, user_id: int):

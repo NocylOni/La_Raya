@@ -1,17 +1,19 @@
 # PyInstaller spec for the Patient Management System.
 # Build with:  pyinstaller PatientManagement.spec
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 hiddenimports = (
     collect_submodules("matplotlib.backends")
     + collect_submodules("reportlab")
+    + collect_submodules("ttkbootstrap")
 )
+datas = collect_data_files("ttkbootstrap")
 
 a = Analysis(
     ["run.py"],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

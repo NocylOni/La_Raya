@@ -62,7 +62,18 @@ class Database:
                 "INSERT INTO schema_meta(key, value) VALUES ('version', ?)",
                 (str(SCHEMA_VERSION),),
             )
+        self._migrate_add_missing_columns()
         self._conn.commit()
+
+    def _migrate_add_missing_columns(self) -> None:
+        """CREATE TABLE IF NOT EXISTS won't add new columns to a table that
+        already existed from an older version of this app - patch those in
+        here so upgrading in place never crashes on a missing column."""
+        existing = {row["name"] for row in self._conn.execute("PRAGMA table_info(users)")}
+        if "language" not in existing:
+            self._conn.execute(
+                "ALTER TABLE users ADD COLUMN language TEXT NOT NULL DEFAULT 'es'"
+            )
 
     @contextmanager
     def cursor(self) -> Iterator[sqlite3.Cursor]:

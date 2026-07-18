@@ -6,14 +6,18 @@ from tkinter import messagebox, ttk
 
 from app.db.dao import patients as patients_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
 
 DEMOGRAPHIC_FIELDS = [
-    ("first_name", "First Name"), ("last_name", "Last Name"), ("dob", "DOB (YYYY-MM-DD)"),
-    ("sex", "Sex"), ("gender", "Gender"), ("phone", "Phone"), ("email", "Email"),
-    ("address", "Address"), ("city", "City"), ("state", "State"), ("zip_code", "ZIP"),
-    ("insurance_provider", "Insurance Provider"), ("insurance_policy_number", "Policy #"),
-    ("insurance_group_number", "Group #"), ("pcp_name", "Primary Care Physician"),
-    ("pcp_contact", "PCP Contact"), ("status", "Status"),
+    ("first_name", "registry.first_name"), ("last_name", "registry.last_name"),
+    ("dob", "registry.dob"), ("sex", "registry.sex"), ("gender", "registry.gender"),
+    ("phone", "registry.phone"), ("email", "registry.email"),
+    ("address", "registry.address"), ("city", "registry.city"), ("state", "registry.state"),
+    ("zip_code", "registry.zip_code"), ("insurance_provider", "registry.insurance_provider"),
+    ("insurance_policy_number", "registry.insurance_policy_number"),
+    ("insurance_group_number", "registry.insurance_group_number"),
+    ("pcp_name", "registry.pcp_name"), ("pcp_contact", "registry.pcp_contact"),
+    ("status", "registry.status"),
 ]
 
 
@@ -25,67 +29,87 @@ class RegistryTab(ttk.Frame):
         self._build()
 
     def _build(self):
+        self._status_options = [t("status.active"), t("status.inactive")]
+        self._status_values = ["active", "inactive"]
+
         self.columnconfigure(1, weight=1)
-        demo_frame = ttk.LabelFrame(self, text="Demographics, Contact & Insurance")
-        demo_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=4, pady=4)
+        demo_frame = ttk.LabelFrame(self, text=t("registry.section_demographics"), padding=10)
+        demo_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=6, pady=6)
         demo_frame.columnconfigure(1, weight=1)
         demo_frame.columnconfigure(3, weight=1)
 
-        for i, (key, label) in enumerate(DEMOGRAPHIC_FIELDS):
+        for i, (key, label_key) in enumerate(DEMOGRAPHIC_FIELDS):
             row, col = divmod(i, 2)
-            ttk.Label(demo_frame, text=label + ":").grid(
-                row=row, column=col * 2, sticky="e", padx=4, pady=2
+            ttk.Label(demo_frame, text=t(label_key) + ":").grid(
+                row=row, column=col * 2, sticky="e", padx=6, pady=4
             )
-            entry = ttk.Entry(demo_frame, width=28)
-            entry.grid(row=row, column=col * 2 + 1, sticky="ew", padx=4, pady=2)
-            self._entries[key] = entry
+            if key == "status":
+                widget = ttk.Combobox(demo_frame, values=self._status_options, width=26,
+                                       state="readonly")
+            else:
+                widget = ttk.Entry(demo_frame, width=28)
+            widget.grid(row=row, column=col * 2 + 1, sticky="ew", padx=6, pady=4)
+            self._entries[key] = widget
 
-        ttk.Button(demo_frame, text="Save Demographics", command=self._save_demographics).grid(
-            row=len(DEMOGRAPHIC_FIELDS) // 2 + 1, column=0, columnspan=4, pady=6
+        ttk.Button(demo_frame, text=t("registry.save_demographics"), style="primary.TButton",
+                   command=self._save_demographics).grid(
+            row=len(DEMOGRAPHIC_FIELDS) // 2 + 1, column=0, columnspan=4, pady=10
         )
 
         sub_nb = ttk.Notebook(self)
-        sub_nb.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=4, pady=4)
+        sub_nb.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=6, pady=6)
         self.rowconfigure(1, weight=1)
 
         self.contacts_panel = RecordPanel(
             sub_nb,
-            columns=[("name", "Name"), ("relationship", "Relationship"), ("phone", "Phone")],
+            columns=[("name", t("registry.col_name")), ("relationship", t("registry.col_relationship")),
+                     ("phone", t("registry.col_phone"))],
             fields=[
-                FieldSpec("name", "Name"), FieldSpec("relationship", "Relationship"),
-                FieldSpec("phone", "Phone"), FieldSpec("email", "Email"),
-                FieldSpec("address", "Address", kind="text"),
+                FieldSpec("name", t("registry.contact_name")),
+                FieldSpec("relationship", t("registry.contact_relationship")),
+                FieldSpec("phone", t("registry.contact_phone")),
+                FieldSpec("email", t("registry.contact_email")),
+                FieldSpec("address", t("registry.contact_address"), kind="text"),
             ],
             on_list=self._list_contacts,
             on_create=self._create_contact,
             on_delete=self._delete_contact,
         )
-        sub_nb.add(self.contacts_panel, text="Emergency Contacts")
+        sub_nb.add(self.contacts_panel, text=t("registry.tab_contacts"))
 
         self.allergy_panel = RecordPanel(
             sub_nb,
-            columns=[("substance", "Substance"), ("reaction", "Reaction"),
-                     ("severity", "Severity"), ("status", "Status")],
+            columns=[("substance", t("registry.col_substance")), ("reaction", t("registry.col_reaction")),
+                     ("severity", t("registry.col_severity")), ("status", t("registry.col_status"))],
             fields=[
-                FieldSpec("substance", "Substance"), FieldSpec("reaction", "Reaction"),
-                FieldSpec("severity", "Severity", kind="combo",
-                          options=["mild", "moderate", "severe"]),
-                FieldSpec("allergy_type", "Type", kind="combo",
-                          options=["drug", "food", "environmental"]),
-                FieldSpec("status", "Status", kind="combo", options=["active", "resolved"]),
-                FieldSpec("notes", "Notes", kind="text"),
+                FieldSpec("substance", t("registry.allergy_substance")),
+                FieldSpec("reaction", t("registry.allergy_reaction")),
+                FieldSpec("severity", t("registry.allergy_severity"), kind="combo",
+                          options=[t("severity.mild"), t("severity.moderate"), t("severity.severe")],
+                          option_values=["mild", "moderate", "severe"]),
+                FieldSpec("allergy_type", t("registry.allergy_type"), kind="combo",
+                          options=[t("allergy_type.drug"), t("allergy_type.food"),
+                                   t("allergy_type.environmental")],
+                          option_values=["drug", "food", "environmental"]),
+                FieldSpec("status", t("registry.allergy_status"), kind="combo",
+                          options=[t("status.active"), t("status.resolved")],
+                          option_values=["active", "resolved"]),
+                FieldSpec("notes", t("registry.allergy_notes"), kind="text"),
             ],
             on_list=self._list_allergies,
             on_create=self._create_allergy,
             on_delete=self._delete_allergy,
         )
-        sub_nb.add(self.allergy_panel, text="Allergies")
+        sub_nb.add(self.allergy_panel, text=t("registry.tab_allergies"))
 
     # ---------------------------------------------------------- demographics
     def load_patient(self):
         patient_id = self.ctx.current_patient_id
         for key, entry in self._entries.items():
-            entry.delete(0, "end")
+            if key == "status":
+                entry.set("")
+            else:
+                entry.delete(0, "end")
         if patient_id is None:
             return
         row = patients_dao.get_patient(self.ctx.db, patient_id)
@@ -93,16 +117,28 @@ class RegistryTab(ttk.Frame):
             return
         for key, entry in self._entries.items():
             value = row[key]
-            if value is not None:
+            if value is None:
+                continue
+            if key == "status":
+                if value in self._status_values:
+                    entry.set(self._status_options[self._status_values.index(value)])
+            else:
                 entry.insert(0, str(value))
         self.contacts_panel.refresh()
         self.allergy_panel.refresh()
 
     def _save_demographics(self):
-        data = {key: entry.get().strip() for key, entry in self._entries.items()}
+        data = {}
+        for key, entry in self._entries.items():
+            if key == "status":
+                display = entry.get()
+                data[key] = (self._status_values[self._status_options.index(display)]
+                              if display in self._status_options else "")
+            else:
+                data[key] = entry.get().strip()
         data = clean_form_values(data)
         if not data.get("first_name") or not data.get("last_name") or not data.get("dob"):
-            messagebox.showerror("Missing data", "First name, last name and DOB are required.")
+            messagebox.showerror(t("registry.missing_data_title"), t("registry.missing_data_message"))
             return
         patient_id = self.ctx.current_patient_id
         try:
@@ -112,11 +148,11 @@ class RegistryTab(ttk.Frame):
             else:
                 patients_dao.update_patient(self.ctx.db, patient_id, **data)
         except Exception as exc:  # noqa: BLE001
-            messagebox.showerror("Could not save patient", str(exc))
+            messagebox.showerror(t("common.error_save_title"), str(exc))
             return
         self.ctx.audit("SAVE_PATIENT", "patient", patient_id)
         self.ctx.on_patient_saved()
-        messagebox.showinfo("Saved", "Patient demographics saved.")
+        messagebox.showinfo(t("common.saved_title"), t("registry.saved_message"))
 
     # ---------------------------------------------------------- contacts
     def _list_contacts(self):

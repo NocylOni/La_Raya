@@ -8,22 +8,25 @@ from matplotlib.figure import Figure
 
 from app.db.dao import visits as visits_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
-
-VITALS_FIELDS = [
-    FieldSpec("recorded_at", "Recorded At (YYYY-MM-DD HH:MM)"),
-    FieldSpec("height_cm", "Height (cm)"),
-    FieldSpec("weight_kg", "Weight (kg)"),
-    FieldSpec("temp_c", "Temp (C)"),
-    FieldSpec("heart_rate", "Heart Rate"),
-    FieldSpec("resp_rate", "Resp. Rate"),
-    FieldSpec("bp_systolic", "BP Systolic"),
-    FieldSpec("bp_diastolic", "BP Diastolic"),
-    FieldSpec("spo2", "SpO2 (%)"),
-    FieldSpec("pain_score", "Pain Score (0-10)"),
-]
+from app.i18n import t
 
 NUMERIC_FIELDS = ["height_cm", "weight_kg", "temp_c", "heart_rate", "resp_rate",
                    "bp_systolic", "bp_diastolic", "spo2", "pain_score"]
+
+
+def _vitals_fields() -> list[FieldSpec]:
+    return [
+        FieldSpec("recorded_at", t("vitals.recorded_at")),
+        FieldSpec("height_cm", t("vitals.height")),
+        FieldSpec("weight_kg", t("vitals.weight")),
+        FieldSpec("temp_c", t("vitals.temp")),
+        FieldSpec("heart_rate", t("vitals.heart_rate")),
+        FieldSpec("resp_rate", t("vitals.resp_rate")),
+        FieldSpec("bp_systolic", t("vitals.bp_systolic")),
+        FieldSpec("bp_diastolic", t("vitals.bp_diastolic")),
+        FieldSpec("spo2", t("vitals.spo2")),
+        FieldSpec("pain_score", t("vitals.pain_score")),
+    ]
 
 
 class VitalsTab(ttk.Frame):
@@ -39,22 +42,23 @@ class VitalsTab(ttk.Frame):
 
         self.panel = RecordPanel(
             self,
-            columns=[("recorded_at", "When"), ("bp_systolic", "BP Sys"),
-                     ("bp_diastolic", "BP Dia"), ("heart_rate", "HR"), ("bmi", "BMI")],
-            fields=VITALS_FIELDS,
+            columns=[("recorded_at", t("vitals.col_when")), ("bp_systolic", t("vitals.col_bp_sys")),
+                     ("bp_diastolic", t("vitals.col_bp_dia")), ("heart_rate", t("vitals.col_hr")),
+                     ("bmi", t("vitals.col_bmi"))],
+            fields=_vitals_fields(),
             on_list=self._list_vitals,
             on_create=self._create_vitals,
             on_delete=visits_dao.delete_vitals,
             on_change=self._refresh_graph,
         )
-        self.panel.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
 
-        graph_frame = ttk.LabelFrame(self, text="Vitals Trend")
-        graph_frame.grid(row=0, column=1, sticky="nsew", padx=4, pady=4)
+        graph_frame = ttk.LabelFrame(self, text=t("vitals.trend_title"), padding=8)
+        graph_frame.grid(row=0, column=1, sticky="nsew", padx=6, pady=6)
         graph_frame.columnconfigure(0, weight=1)
         graph_frame.rowconfigure(1, weight=1)
 
-        ttk.Label(graph_frame, text="Metric:").grid(row=0, column=0, sticky="w")
+        ttk.Label(graph_frame, text=t("vitals.metric")).grid(row=0, column=0, sticky="w")
         self.metric_combo = ttk.Combobox(
             graph_frame, state="readonly",
             values=["heart_rate", "bp_systolic", "bp_diastolic", "weight_kg", "bmi", "spo2"],
@@ -94,7 +98,7 @@ class VitalsTab(ttk.Frame):
             xs = [r["recorded_at"] for r in rows if r[metric] is not None]
             ys = [r[metric] for r in rows if r[metric] is not None]
             if xs:
-                self.ax.plot(range(len(xs)), ys, marker="o")
+                self.ax.plot(range(len(xs)), ys, marker="o", color="#2c3e50")
                 self.ax.set_xticks(range(len(xs)))
                 self.ax.set_xticklabels([x[:10] for x in xs], rotation=45, ha="right", fontsize=7)
         self.ax.set_title(metric)

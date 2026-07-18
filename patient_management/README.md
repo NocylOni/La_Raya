@@ -38,6 +38,16 @@ records, templates for common visit notes, autosave/version history,
 vitals & lab trend graphs, clinical alerts (drug interactions, allergy
 conflicts, abnormal labs, overdue follow-ups), and PDF export.
 
+**Language:** the whole interface is available in Spanish and English.
+Pick a language on the login screen (Spanish is the default); the choice is
+saved to the user's account and remembered on the next login. Each user
+account can have its own language.
+
+**Look and feel:** a clean, modern flat theme ([ttkbootstrap](https://ttkbootstrap.readthedocs.io/)
+"flatly") — sober navy/white palette, semantic button colors (green = save,
+red = delete), zebra-striped tables — built to look like a professional
+clinical dashboard rather than a default Tk app.
+
 ## Running from source
 
 Requires Python 3.10+ with Tkinter (on Debian/Ubuntu: `sudo apt install

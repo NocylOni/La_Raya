@@ -6,20 +6,27 @@ from tkinter import ttk
 from app.db.dao import templates as templates_dao
 from app.db.dao import visits as visits_dao
 from app.gui.widgets import FieldSpec, RecordPanel, clean_form_values
+from app.i18n import t
 
-SOAP_FIELDS = [
-    FieldSpec("visit_date", "Visit Date"),
-    FieldSpec("provider", "Provider"),
-    FieldSpec("visit_type", "Visit Type", kind="combo",
-              options=["office visit", "follow-up", "telehealth", "urgent", "annual physical"]),
-    FieldSpec("chief_complaint", "Chief Complaint"),
-    FieldSpec("hpi", "History of Present Illness", kind="text"),
-    FieldSpec("ros", "Review of Systems", kind="text"),
-    FieldSpec("physical_exam", "Physical Examination", kind="text"),
-    FieldSpec("assessment", "Assessment", kind="text"),
-    FieldSpec("plan", "Plan", kind="text"),
-    FieldSpec("notes", "Notes", kind="text"),
-]
+
+def _soap_fields() -> list[FieldSpec]:
+    return [
+        FieldSpec("visit_date", t("visits.visit_date")),
+        FieldSpec("provider", t("visits.provider")),
+        FieldSpec("visit_type", t("visits.visit_type"), kind="combo",
+                  options=[t("visit_type.office"), t("visit_type.follow_up"),
+                           t("visit_type.telehealth"), t("visit_type.urgent"),
+                           t("visit_type.annual")],
+                  option_values=["office visit", "follow-up", "telehealth", "urgent",
+                                 "annual physical"]),
+        FieldSpec("chief_complaint", t("visits.chief_complaint")),
+        FieldSpec("hpi", t("visits.hpi"), kind="text"),
+        FieldSpec("ros", t("visits.ros"), kind="text"),
+        FieldSpec("physical_exam", t("visits.physical_exam"), kind="text"),
+        FieldSpec("assessment", t("visits.assessment"), kind="text"),
+        FieldSpec("plan", t("visits.plan"), kind="text"),
+        FieldSpec("notes", t("visits.notes"), kind="text"),
+    ]
 
 
 class VisitsTab(ttk.Frame):
@@ -33,26 +40,26 @@ class VisitsTab(ttk.Frame):
         self.rowconfigure(1, weight=1)
 
         toolbar = ttk.Frame(self)
-        toolbar.grid(row=0, column=0, sticky="ew", padx=4, pady=(4, 0))
-        ttk.Label(toolbar, text="Apply template:").pack(side="left")
+        toolbar.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 0))
+        ttk.Label(toolbar, text=t("visits.apply_template")).pack(side="left")
         self.template_combo = ttk.Combobox(toolbar, state="readonly", width=30)
-        self.template_combo.pack(side="left", padx=4)
-        ttk.Button(toolbar, text="Apply", command=self._apply_template).pack(side="left")
-        ttk.Button(toolbar, text="Export Visit PDF", command=self._export_pdf).pack(
-            side="right"
-        )
+        self.template_combo.pack(side="left", padx=6)
+        ttk.Button(toolbar, text=t("visits.apply"), style="outline.TButton",
+                   command=self._apply_template).pack(side="left")
+        ttk.Button(toolbar, text=t("visits.export_pdf"), style="outline.TButton",
+                   command=self._export_pdf).pack(side="right")
 
         self.panel = RecordPanel(
             self,
-            columns=[("visit_date", "Date"), ("visit_type", "Type"),
-                     ("chief_complaint", "Chief Complaint")],
-            fields=SOAP_FIELDS,
+            columns=[("visit_date", t("visits.col_date")), ("visit_type", t("visits.col_type")),
+                     ("chief_complaint", t("visits.col_complaint"))],
+            fields=_soap_fields(),
             on_list=self._list_visits,
             on_create=self._create_visit,
             on_update=self._update_visit,
             on_delete=visits_dao.delete_visit,
         )
-        self.panel.grid(row=1, column=0, sticky="nsew", padx=4, pady=4)
+        self.panel.grid(row=1, column=0, sticky="nsew", padx=6, pady=6)
 
     def load_patient(self):
         self.panel.refresh()
@@ -76,7 +83,7 @@ class VisitsTab(ttk.Frame):
 
         selection = self.panel.tree.selection()
         if not selection:
-            messagebox.showinfo("Select a visit", "Select a visit in the list to export.")
+            messagebox.showinfo(t("visits.select_visit_title"), t("visits.select_visit_message"))
             return
         visit_id = int(selection[0])
         path = filedialog.asksaveasfilename(defaultextension=".pdf",
@@ -86,7 +93,7 @@ class VisitsTab(ttk.Frame):
         from app.logic import pdf_export
         pdf_export.export_visit_note_pdf(self.ctx.db, visit_id, path)
         self.ctx.audit("EXPORT_VISIT_PDF", "visit", visit_id, path)
-        messagebox.showinfo("Exported", f"Visit note exported to {path}")
+        messagebox.showinfo(t("common.exported_title"), path)
 
     # ------------------------------------------------------------ CRUD glue
     def _list_visits(self):

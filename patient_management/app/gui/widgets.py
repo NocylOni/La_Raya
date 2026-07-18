@@ -7,13 +7,19 @@ from dataclasses import dataclass, field
 from tkinter import messagebox, ttk
 from typing import Callable, Optional
 
+from app.i18n import t
+
 
 @dataclass
 class FieldSpec:
     name: str
     label: str
     kind: str = "entry"          # entry | text | combo | check | date | readonly
-    options: list[str] = field(default_factory=list)
+    options: list[str] = field(default_factory=list)   # display labels shown to the user
+    option_values: list[str] | None = None              # canonical DB values, parallel to
+                                                          # `options`; defaults to `options`
+                                                          # itself when not given (untranslated
+                                                          # combos where display == stored value)
     width: int = 30
 
 
@@ -69,24 +75,27 @@ class RecordPanel(ttk.Frame):
         scroll.grid(row=0, column=1, sticky="ns")
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
-        form_frame = ttk.LabelFrame(self, text="Details")
-        form_frame.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+        form_frame = ttk.LabelFrame(self, text=t("common.details"), padding=10)
+        form_frame.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         form_frame.columnconfigure(1, weight=1)
 
         for i, spec in enumerate(self.fields):
             ttk.Label(form_frame, text=spec.label + ":").grid(
-                row=i, column=0, sticky="ne", padx=4, pady=2
+                row=i, column=0, sticky="ne", padx=(2, 8), pady=4
             )
             widget = self._make_field_widget(form_frame, spec)
-            widget.grid(row=i, column=1, sticky="ew", padx=4, pady=2)
+            widget.grid(row=i, column=1, sticky="ew", padx=2, pady=4)
             self._widgets[spec.name] = widget
 
         btn_frame = ttk.Frame(self)
-        btn_frame.grid(row=2, column=0, sticky="ew", pady=6)
-        ttk.Button(btn_frame, text="New", command=self.clear_form).pack(side="left", padx=2)
-        ttk.Button(btn_frame, text="Save", command=self._save).pack(side="left", padx=2)
+        btn_frame.grid(row=2, column=0, sticky="ew", pady=10)
+        ttk.Button(btn_frame, text=t("common.new"), style="secondary.TButton",
+                   command=self.clear_form).pack(side="left", padx=3)
+        ttk.Button(btn_frame, text=t("common.save"), style="success.TButton",
+                   command=self._save).pack(side="left", padx=3)
         if self.on_delete:
-            ttk.Button(btn_frame, text="Delete", command=self._delete).pack(side="left", padx=2)
+            ttk.Button(btn_frame, text=t("common.delete"), style="danger.TButton",
+                       command=self._delete).pack(side="left", padx=3)
 
     def _make_field_widget(self, parent, spec: FieldSpec):
         if spec.kind == "text":
@@ -108,13 +117,30 @@ class RecordPanel(ttk.Frame):
         for row in self.tree.get_children():
             self.tree.delete(row)
         self._records.clear()
-        for record in self.on_list():
+        self.tree.tag_configure("odd_row", background="#f4f6f8")
+        field_by_name = {spec.name: spec for spec in self.fields}
+        for i, record in enumerate(self.on_list()):
             record = dict(record)
             rid = record[self.id_key]
             self._records[rid] = record
-            values = [record.get(key, "") for key, _ in self.columns]
-            self.tree.insert("", "end", iid=str(rid), values=values)
+            values = [self._display_value(field_by_name.get(key), record.get(key, ""))
+                      for key, _ in self.columns]
+            tag = "odd_row" if i % 2 else ""
+            self.tree.insert("", "end", iid=str(rid), values=values, tags=(tag,))
         self.clear_form()
+
+    @staticmethod
+    def _display_value(spec: Optional[FieldSpec], raw):
+        """List columns mirror form field values 1:1 by name - reuse the
+        combo's value->label mapping so lists never show raw DB codes like
+        'active' or '1' in an otherwise-translated UI."""
+        if spec is None:
+            return raw
+        if spec.kind == "combo" and spec.option_values and raw in spec.option_values:
+            return spec.options[spec.option_values.index(raw)]
+        if spec.kind == "check":
+            return t("common.yes") if raw else t("common.no")
+        return raw
 
     def clear_form(self):
         self._selected_id = None
@@ -141,7 +167,11 @@ class RecordPanel(ttk.Frame):
         elif spec.kind == "check":
             widget.var.set(1 if value else 0)  # type: ignore[attr-defined]
         elif spec.kind == "combo":
-            widget.set(str(value) if value is not None else "")
+            values = spec.option_values or spec.options
+            if value is not None and value in values:
+                widget.set(spec.options[values.index(value)])
+            else:
+                widget.set(str(value) if value is not None else "")
         else:
             state = str(widget["state"])
             if state == "readonly":
@@ -159,7 +189,11 @@ class RecordPanel(ttk.Frame):
         if spec.kind == "check":
             return bool(widget.var.get())  # type: ignore[attr-defined]
         if spec.kind == "combo":
-            return widget.get()
+            display = widget.get()
+            values = spec.option_values or spec.options
+            if display in spec.options:
+                return values[spec.options.index(display)]
+            return display
         return widget.get().strip()
 
     def apply_values(self, values: dict):
@@ -180,7 +214,7 @@ class RecordPanel(ttk.Frame):
             else:
                 self.on_create(data)
         except Exception as exc:  # noqa: BLE001 - surfaced to the clinician
-            messagebox.showerror("Could not save", str(exc))
+            messagebox.showerror(t("common.error_save_title"), str(exc))
             return
         self.refresh()
         if self.on_change:
@@ -189,12 +223,12 @@ class RecordPanel(ttk.Frame):
     def _delete(self):
         if self._selected_id is None or not self.on_delete:
             return
-        if not messagebox.askyesno("Confirm delete", "Delete the selected record?"):
+        if not messagebox.askyesno(t("common.confirm_delete_title"), t("common.confirm_delete_message")):
             return
         try:
             self.on_delete(self._selected_id)
         except Exception as exc:  # noqa: BLE001
-            messagebox.showerror("Could not delete", str(exc))
+            messagebox.showerror(t("common.error_delete_title"), str(exc))
             return
         self.refresh()
         if self.on_change:

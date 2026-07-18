@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name       TEXT NOT NULL,
     role            TEXT NOT NULL DEFAULT 'clinician',
     active          INTEGER NOT NULL DEFAULT 1,
+    language        TEXT NOT NULL DEFAULT 'es',
     created_at      TEXT NOT NULL DEFAULT (datetime('now')),
     last_login      TEXT
 );
