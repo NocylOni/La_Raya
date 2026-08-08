@@ -722,12 +722,70 @@
   .fab:hover{transform:translateY(-3px) scale(1.05);}
   .fab:active{transform:scale(0.94);}
   .fab.danger{
-    bottom:92px;width:46px;height:46px;border-radius:15px;
-    font-size:1rem;
+    bottom:96px;width:56px;height:56px;border-radius:18px;
+    font-size:1.3rem;
     background:linear-gradient(130deg, #FB7185, #E06060);
     color:#2A1212;
     box-shadow:0 10px 26px -8px rgba(251,113,133,0.5);
   }
+
+  /* ================= Company switch ================= */
+  .company-switch{
+    display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;
+    background:var(--card);
+  }
+  .company-btn{
+    font-family:var(--mono);font-weight:600;font-size:0.74rem;
+    background:none;border:none;color:var(--text-soft);
+    padding:9px 15px;cursor:pointer;transition:all .2s;
+    border-right:1px solid var(--line);
+  }
+  .company-btn:last-child{border-right:none;}
+  .company-btn.active{background:var(--aqua-bg);color:var(--aqua);}
+  .company-btn:hover:not(.active){color:var(--text);}
+
+  /* ================= Recursos ================= */
+  .res-card{padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+  .res-search{display:flex;flex-direction:column;gap:10px;}
+  .res-search input{
+    font-family:var(--mono);font-size:0.86rem;
+    padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg-alt);color:var(--text);width:100%;
+    transition:border-color .2s;
+  }
+  .res-search input:focus{outline:none;border-color:var(--aqua);}
+  .res-links{display:flex;gap:8px;flex-wrap:wrap;}
+  .res-links button{
+    font-family:var(--mono);font-size:0.7rem;
+    background:none;border:1px solid var(--line);color:var(--text-soft);
+    padding:7px 14px;border-radius:20px;cursor:pointer;transition:all .2s;
+  }
+  .res-links button:hover{border-color:var(--aqua);color:var(--text);}
+  .res-add{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line-soft);padding-top:14px;}
+  .res-add input{
+    font-family:var(--mono);font-size:0.82rem;
+    padding:9px 10px;border:1px solid var(--line);border-radius:9px;
+    background:var(--bg-alt);color:var(--text);flex:1;min-width:120px;
+    transition:border-color .2s;
+  }
+  .res-add input:focus{outline:none;border-color:var(--aqua);}
+  .res-add button{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:0.8rem;
+    background:linear-gradient(110deg, #22D3EE, #5EEAD4);color:#0B211C;
+    border:none;border-radius:9px;padding:9px 16px;cursor:pointer;
+    transition:transform .15s;
+  }
+  .res-add button:hover{transform:translateY(-2px);}
+  .glossary-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;}
+  .gloss-item{
+    display:flex;align-items:center;gap:10px;
+    background:var(--bg-alt);border:1px solid var(--line-soft);border-radius:9px;
+    padding:8px 12px;font-family:var(--mono);font-size:0.78rem;
+  }
+  .gloss-item .g-term{font-weight:600;min-width:100px;}
+  .gloss-item .g-note{flex:1;color:var(--text-soft);}
+  .gloss-item button{background:none;border:none;color:var(--text-soft);cursor:pointer;font-family:var(--mono);font-size:0.7rem;text-decoration:underline;}
+  .gloss-item button:hover{color:var(--coral);}
 
   /* ================= Modal ================= */
   .modal-backdrop{
@@ -832,15 +890,19 @@
       <div class="logo-mark"></div>
       <div>
         <h1>Raya</h1>
-        <div class="sub">quincenas · pagos días 7 y 22</div>
+        <div class="sub" id="headerSub">quincenas · pagos días 7 y 22</div>
       </div>
     </div>
     <div class="header-actions">
+      <div class="company-switch" id="companySwitch">
+        <button type="button" class="company-btn active" data-company="LLS">LLS</button>
+        <button type="button" class="company-btn" data-company="PROPIO">Propio</button>
+      </div>
       <button class="icon-btn theme" id="themeToggle" title="cambiar tema">◐</button>
       <button class="icon-btn" id="reopenSplash">inicio</button>
       <div class="config-chips">
         <div class="chip">
-          <label for="wageInput">Pago/hr</label>
+          <label for="wageInput" id="wageLabel">Pago/hr</label>
           <input type="number" id="wageInput" step="0.01" min="0">
           <span class="unit">$</span>
         </div>
@@ -940,16 +1002,39 @@
     </div>
   </section>
 
+  <section class="zone anim-rise" style="animation-delay:.18s">
+    <div class="eyebrow">Recursos<span class="ey-line"></span><button type="button" class="sq-btn" data-zone-toggle="recursos" title="mostrar / ocultar">▴</button></div>
+    <div class="zone-body">
+      <div class="card res-card">
+        <div class="res-search">
+          <input type="text" id="resTerm" placeholder="buscar palabra o término…">
+          <div class="res-links" id="resLinks">
+            <button type="button" data-src="wordreference">WordReference</button>
+            <button type="button" data-src="linguee">Linguee</button>
+            <button type="button" data-src="glosbe">Glosbe</button>
+            <button type="button" data-src="rae">RAE</button>
+          </div>
+        </div>
+        <form class="res-add" id="glossaryForm">
+          <input type="text" id="glossTerm" placeholder="término" required>
+          <input type="text" id="glossNote" placeholder="traducción / nota">
+          <button type="submit">Guardar en glosario</button>
+        </form>
+        <div class="glossary-list" id="glossaryList"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="zone manual-zone anim-rise" id="manualZone" style="animation-delay:.2s">
     <div class="eyebrow">Registro manual<span class="ey-line"></span></div>
     <button type="button" class="zone-open-btn" id="manualToggle">
       <span class="plus">+</span>
-      Registrar turno o falta
+      <span id="manualToggleLabel">Registrar turno o falta</span>
       <small>días pasados · minutos directos · AP / VTO / UTO / AAP</small>
     </button>
     <div class="manual-body" id="manualBody">
       <div class="form-tabs">
-        <button type="button" class="form-tab active" id="tabWork">Turno</button>
+        <button type="button" class="form-tab active" id="tabWork"><span id="tabWorkLabel">Turno</span></button>
         <button type="button" class="form-tab" id="tabAbsence">Falta</button>
       </div>
 
@@ -1106,16 +1191,57 @@ const LS_NOTIF = 'raya_notif';
 const LS_RECEIVED = 'raya_received';
 const LS_ZONES = 'raya_zones';
 const LS_THEME = 'raya_theme';
+const LS_COMPANY = 'raya_company';
+const LS_GLOSSARY = 'raya_glossary';
 
-function loadEntries(){ try{ return JSON.parse(localStorage.getItem(LS_ENTRIES)) || []; } catch(e){ return []; } }
-function saveEntries(list){ localStorage.setItem(LS_ENTRIES, JSON.stringify(list)); }
-function loadNum(key, def){ const v = parseFloat(localStorage.getItem(key)); return isNaN(v) ? def : v; }
-function saveNum(key, v){ localStorage.setItem(key, String(v)); }
-function loadReceived(){ try{ return JSON.parse(localStorage.getItem(LS_RECEIVED)) || {}; }catch(e){ return {}; } }
-function saveReceived(map){ localStorage.setItem(LS_RECEIVED, JSON.stringify(map)); }
+/* ---------- companies (LLS: hourly shift, Propio: paid per minute per call) ---------- */
+const COMPANIES = {
+  LLS: { label:'LLS', payMode:'hourly', defaultWage:110 },
+  PROPIO: { label:'Propio', payMode:'perMinute', defaultWage:1.83 }
+};
+
+/* one-time migration: existing (pre-multi-company) data becomes the LLS profile.
+   entries that were imported from a previous per-call tracker (id starts with
+   "import-", see convertCallsData below) go to Propio instead, since that's
+   exactly the per-minute/call shape they came from. */
+function migrateLegacyCompanyData(){
+  if(localStorage.getItem(LS_COMPANY)) return;
+
+  const legacyEntriesRaw = localStorage.getItem(LS_ENTRIES);
+  if(legacyEntriesRaw !== null){
+    let legacyEntries = [];
+    try{ legacyEntries = JSON.parse(legacyEntriesRaw) || []; }catch(e){}
+    const llsEntries = legacyEntries.filter(e => !String(e.id).startsWith('import-'));
+    const propioEntries = legacyEntries.filter(e => String(e.id).startsWith('import-'));
+    if(llsEntries.length) localStorage.setItem(LS_ENTRIES+'__LLS', JSON.stringify(llsEntries));
+    if(propioEntries.length) localStorage.setItem(LS_ENTRIES+'__PROPIO', JSON.stringify(propioEntries));
+  }
+
+  [LS_WAGE, LS_GOAL, LS_DAILY_HOURS, LS_WEEKLY_HOURS, LS_TIMER, LS_RECEIVED, LS_NOTIF, LS_LASTBACKUP].forEach(base=>{
+    const v = localStorage.getItem(base);
+    if(v !== null) localStorage.setItem(base+'__LLS', v);
+  });
+
+  localStorage.setItem(LS_COMPANY, 'LLS');
+}
+migrateLegacyCompanyData();
+
+let company = localStorage.getItem(LS_COMPANY) || 'LLS';
+if(!COMPANIES[company]) company = 'LLS';
+function isPerMinute(){ return COMPANIES[company].payMode === 'perMinute'; }
+function wagePerHour(){ return isPerMinute() ? wage*60 : wage; }
+function wageUnitLabel(){ return isPerMinute() ? 'min' : 'hr'; }
+function nsKey(base){ return base + '__' + company; }
+
+function loadEntries(){ try{ return JSON.parse(localStorage.getItem(nsKey(LS_ENTRIES))) || []; } catch(e){ return []; } }
+function saveEntries(list){ localStorage.setItem(nsKey(LS_ENTRIES), JSON.stringify(list)); }
+function loadNum(key, def){ const v = parseFloat(localStorage.getItem(nsKey(key))); return isNaN(v) ? def : v; }
+function saveNum(key, v){ localStorage.setItem(nsKey(key), String(v)); }
+function loadReceived(){ try{ return JSON.parse(localStorage.getItem(nsKey(LS_RECEIVED))) || {}; }catch(e){ return {}; } }
+function saveReceived(map){ localStorage.setItem(nsKey(LS_RECEIVED), JSON.stringify(map)); }
 
 let entries = loadEntries();
-let wage = loadNum(LS_WAGE, 110);
+let wage = loadNum(LS_WAGE, COMPANIES[company].defaultWage);
 let goal = loadNum(LS_GOAL, 0);
 let dailyHours = loadNum(LS_DAILY_HOURS, 7.5);
 let weeklyHours = loadNum(LS_WEEKLY_HOURS, 37.5);
@@ -1211,7 +1337,8 @@ function isAbsence(e){ return e.type === 'absence'; }
 function entryMinutes(e){ return isAbsence(e) ? 0 : (e.workedMinutes || 0); }
 function entryEarned(e){
   if(isAbsence(e)) return 0;
-  return typeof e.earned === 'number' ? e.earned : (e.workedMinutes/60) * wage;
+  if(typeof e.earned === 'number') return e.earned;
+  return isPerMinute() ? e.workedMinutes * wage : (e.workedMinutes/60) * wage;
 }
 function sumMinutes(list){ return list.reduce((s,e)=> s + entryMinutes(e), 0); }
 function sumEarned(list){ return list.reduce((s,e)=> s + entryEarned(e), 0); }
@@ -1248,7 +1375,7 @@ function showHoyMsg(msg, tone='aqua'){
 /* daily notification flags */
 function notifState(){
   try{
-    const n = JSON.parse(localStorage.getItem(LS_NOTIF));
+    const n = JSON.parse(localStorage.getItem(nsKey(LS_NOTIF)));
     if(n && n.date === todayStr()) return n;
   }catch(e){}
   return { date: todayStr() };
@@ -1256,7 +1383,7 @@ function notifState(){
 function setNotif(key){
   const n = notifState();
   n[key] = true;
-  localStorage.setItem(LS_NOTIF, JSON.stringify(n));
+  localStorage.setItem(nsKey(LS_NOTIF), JSON.stringify(n));
 }
 function hasNotif(key){ return !!notifState()[key]; }
 
@@ -1293,7 +1420,7 @@ let tickHandle = null;
 
 function loadTimerState(){
   try{
-    const s = JSON.parse(localStorage.getItem(LS_TIMER));
+    const s = JSON.parse(localStorage.getItem(nsKey(LS_TIMER)));
     if(s && s.clockInAt){
       if(!Array.isArray(s.breaks)) s.breaks = [];
       return s;
@@ -1301,8 +1428,8 @@ function loadTimerState(){
   }catch(e){}
   return { clockInAt:null, pauseStartAt:null, breakMs:0, breaks:[], note:'', breakWarn:0 };
 }
-function saveTimerState(){ localStorage.setItem(LS_TIMER, JSON.stringify(timerState)); }
-function clearTimerState(){ timerState = { clockInAt:null, pauseStartAt:null, breakMs:0, breaks:[], note:'', breakWarn:0 }; localStorage.removeItem(LS_TIMER); }
+function saveTimerState(){ localStorage.setItem(nsKey(LS_TIMER), JSON.stringify(timerState)); }
+function clearTimerState(){ timerState = { clockInAt:null, pauseStartAt:null, breakMs:0, breaks:[], note:'', breakWarn:0 }; localStorage.removeItem(nsKey(LS_TIMER)); }
 
 /* live session (para actualizar círculos y ritmo en tiempo real) */
 function liveSession(){
@@ -1312,7 +1439,7 @@ function liveSession(){
   if(timerState.pauseStartAt) breakMs += (now - timerState.pauseStartAt);
   const workedMs = Math.max(0, (now - timerState.clockInAt) - breakMs);
   const mins = workedMs/60000;
-  return { minutes: mins, earned: (mins/60) * wage };
+  return { minutes: mins, earned: isPerMinute() ? mins * wage : (mins/60) * wage };
 }
 
 const dot = document.getElementById('statusDot');
@@ -1340,7 +1467,7 @@ function timerTick(){
   if(timerState.pauseStartAt) breakMs += (now - timerState.pauseStartAt);
   const workedMs = Math.max(0, (now - timerState.clockInAt) - breakMs);
   display.textContent = hhmmss(workedMs/1000);
-  liveEarn.textContent = `+$${money((workedMs/3600000) * wage)}`;
+  liveEarn.textContent = `+$${money(isPerMinute() ? (workedMs/60000) * wage : (workedMs/3600000) * wage)}`;
 
   if(timerState.pauseStartAt){
     const pausedSec = (now - timerState.pauseStartAt)/1000;
@@ -1373,14 +1500,19 @@ function refreshTimerUI(){
   const running = !!timerState.clockInAt && !timerState.pauseStartAt;
   const paused = !!timerState.clockInAt && !!timerState.pauseStartAt;
   const idle = !timerState.clockInAt;
+  const perMin = isPerMinute();
 
   dot.className = 'dot' + (running ? ' running' : paused ? ' paused' : '');
-  statusText.textContent = running ? 'trabajando' : paused ? 'en pausa' : 'detenido';
+  statusText.textContent = running ? (perMin ? 'en llamada' : 'trabajando') : paused ? 'en pausa' : 'detenido';
 
   btnStart.disabled = !idle;
+  btnStart.textContent = perMin ? 'Iniciar llamada' : 'Iniciar';
+  btnPause.style.display = perMin ? 'none' : '';
   btnPause.disabled = idle;
   btnPause.textContent = paused ? 'Reanudar' : 'Pausar';
   btnStop.disabled = idle;
+  btnStop.textContent = perMin ? 'Finalizar llamada' : 'Detener';
+  timerNote.placeholder = perMin ? 'nota de la llamada (opcional)' : 'nota del turno (opcional)';
   timerNote.value = timerState.note || '';
 
   timerTick();
@@ -1453,7 +1585,7 @@ btnStop.addEventListener('click', ()=>{
     showHoyMsg(pick(MISS_MSGS).replace('{X}', '$'+moneyShort(goal - earnedToday)), 'coral');
   }
   setTimeout(()=>{
-    showToast('Jornada guardada. Un respaldo no le hace daño a nadie.', 'peri', {
+    showToast(isPerMinute() ? 'Llamada guardada. Un respaldo no le hace daño a nadie.' : 'Jornada guardada. Un respaldo no le hace daño a nadie.', 'peri', {
       action:'Exportar', onAction: doExport, ttl: 12000
     });
   }, 1200);
@@ -1581,7 +1713,7 @@ function ritmoCard(label, expectedHours, totals, accClass){
   const actualHours = totals.minutes/60;
   const rawPct = expectedHours > 0 ? (actualHours/expectedHours)*100 : 0;
   const pct = Math.min(100, rawPct);
-  const expectedWage = expectedHours * wage;
+  const expectedWage = expectedHours * wagePerHour();
   const diff = expectedWage - totals.earned;
   const diffClass = diff > 0.5 ? 'short' : (diff < -0.5 ? 'ahead' : 'even');
   const diffLabel = diff > 0.5 ? `−$${moneyShort(diff)}` : (diff < -0.5 ? `+$${moneyShort(-diff)}` : 'al día');
@@ -1638,7 +1770,7 @@ function renderAusencias(){
     types.forEach(tp=>{
       const items = abs.filter(a=>a.absenceType===tp);
       const mins = items.reduce((s,a)=>s+absenceImpliedMinutes(a),0);
-      out[tp] = { count: items.length, mins, money: (mins/60)*wage };
+      out[tp] = { count: items.length, mins, money: (mins/60)*wagePerHour() };
     });
     out.total = abs.length;
     return out;
@@ -1680,7 +1812,7 @@ function renderAusencias(){
       ${qCards || '<div class="aus-note" style="margin:0;">nada registrado esta quincena</div>'}
       ${mCards}
     </div>
-    <div class="aus-note">falta sin minutos = día completo (${dailyHours}h) · el dinero es lo que habrías ganado en ese tiempo a $${money(wage)}/hr</div>
+    <div class="aus-note">falta sin minutos = día completo (${dailyHours}h) · el dinero es lo que habrías ganado en ese tiempo a $${money(wage)}/${wageUnitLabel()}</div>
   `;
 }
 document.getElementById('ausSummary').addEventListener('click', ()=>{
@@ -1697,6 +1829,7 @@ function render(){
   document.getElementById('dailyHoursInput').value = dailyHours;
   document.getElementById('weeklyHoursInput').value = weeklyHours;
 
+  updateCompanyUI();
   renderToday();
   renderRitmo();
   renderAusencias();
@@ -2145,6 +2278,37 @@ modeMinutes.addEventListener('click', ()=>{
   minutesFormEl.style.display = 'grid'; entryFormEl.style.display = 'none';
 });
 
+/* ---------- company switch ---------- */
+function updateCompanyUI(){
+  document.querySelectorAll('.company-btn').forEach(b=> b.classList.toggle('active', b.getAttribute('data-company') === company));
+  const perMin = isPerMinute();
+  document.getElementById('wageLabel').textContent = perMin ? 'Pago/min' : 'Pago/hr';
+  document.getElementById('headerSub').textContent = perMin
+    ? `${COMPANIES[company].label} · pago por minuto de llamada`
+    : `${COMPANIES[company].label} · quincenas · pagos días 7 y 22`;
+  document.getElementById('manualToggleLabel').textContent = perMin ? 'Registrar llamada o falta' : 'Registrar turno o falta';
+  document.getElementById('tabWorkLabel').textContent = perMin ? 'Llamada' : 'Turno';
+}
+
+function switchCompany(id){
+  if(!COMPANIES[id] || id === company) return;
+  company = id;
+  localStorage.setItem(LS_COMPANY, company);
+  entries = loadEntries();
+  wage = loadNum(LS_WAGE, COMPANIES[company].defaultWage);
+  goal = loadNum(LS_GOAL, 0);
+  dailyHours = loadNum(LS_DAILY_HOURS, 7.5);
+  weeklyHours = loadNum(LS_WEEKLY_HOURS, 37.5);
+  receivedMap = loadReceived();
+  timerState = loadTimerState();
+  if(editingId !== null) cancelEdit();
+  refreshTimerUI();
+  render();
+}
+document.querySelectorAll('.company-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchCompany(btn.getAttribute('data-company')));
+});
+
 /* ---------- config events ---------- */
 document.getElementById('wageInput').addEventListener('change', (e)=>{
   const v = parseFloat(e.target.value); wage = isNaN(v) ? 0 : v; saveNum(LS_WAGE, wage); render();
@@ -2326,15 +2490,15 @@ absenceFormEl.addEventListener('submit', (e)=>{
 
 /* ---------- export / import ---------- */
 function doExport(){
-  const data = { wage, goal, dailyHours, weeklyHours, received: receivedMap, entries };
+  const data = { company, wage, goal, dailyHours, weeklyHours, received: receivedMap, entries };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `raya-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `raya-${COMPANIES[company].label.toLowerCase()}-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  localStorage.setItem(LS_LASTBACKUP, todayStr());
+  localStorage.setItem(nsKey(LS_LASTBACKUP), todayStr());
 }
 document.getElementById('exportBtn').addEventListener('click', doExport);
 
@@ -2434,7 +2598,7 @@ document.getElementById('delConfirm').addEventListener('click', ()=>{
     saveReceived(receivedMap);
     localStorage.setItem('timeledger_seeded','1');
     localStorage.setItem('raya_seed_merged_v2','1');
-    localStorage.removeItem(LS_NOTIF);
+    localStorage.removeItem(nsKey(LS_NOTIF));
     deleteModal.classList.remove('show');
     render();
     showToast('Todo borrado. Hoja en blanco.', 'coral');
@@ -2459,6 +2623,62 @@ document.getElementById('rangeSel').addEventListener('change', (e)=>{
   render();
 });
 
+/* ---------- recursos: búsqueda rápida + glosario personal (compartido entre perfiles) ---------- */
+function loadGlossary(){ try{ return JSON.parse(localStorage.getItem(LS_GLOSSARY)) || []; }catch(e){ return []; } }
+function saveGlossary(list){ localStorage.setItem(LS_GLOSSARY, JSON.stringify(list)); }
+let glossary = loadGlossary();
+
+const LOOKUP_URLS = {
+  wordreference: t => `https://www.wordreference.com/es/translation.asp?tranword=${encodeURIComponent(t)}`,
+  linguee: t => `https://www.linguee.com/english-spanish/search?query=${encodeURIComponent(t)}`,
+  glosbe: t => `https://glosbe.com/en/es/${encodeURIComponent(t)}`,
+  rae: t => `https://dle.rae.es/${encodeURIComponent(t)}`
+};
+document.querySelectorAll('#resLinks button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const term = document.getElementById('resTerm').value.trim();
+    if(!term) return;
+    const build = LOOKUP_URLS[btn.getAttribute('data-src')];
+    if(build) window.open(build(term), '_blank', 'noopener');
+  });
+});
+document.getElementById('resTerm').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.querySelector('#resLinks button[data-src="wordreference"]').click(); }
+});
+
+function renderGlossary(){
+  const list = document.getElementById('glossaryList');
+  if(glossary.length === 0){
+    list.innerHTML = `<p class="empty-note" style="padding:4px 0;">Sin términos guardados todavía.</p>`;
+    return;
+  }
+  list.innerHTML = glossary.slice().reverse().map(g=>`
+    <div class="gloss-item">
+      <span class="g-term">${g.term.replace(/</g,'&lt;')}</span>
+      <span class="g-note">${(g.note||'').replace(/</g,'&lt;')}</span>
+      <button type="button" data-id="${g.id}" class="gloss-del">borrar</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.gloss-del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      glossary = glossary.filter(g=> String(g.id) !== btn.getAttribute('data-id'));
+      saveGlossary(glossary);
+      renderGlossary();
+    });
+  });
+}
+document.getElementById('glossaryForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const term = document.getElementById('glossTerm').value.trim();
+  const note = document.getElementById('glossNote').value.trim();
+  if(!term) return;
+  glossary.push({ id: Date.now(), term, note });
+  saveGlossary(glossary);
+  e.target.reset();
+  renderGlossary();
+});
+renderGlossary();
+
 /* ---------- seed data (tracker anterior, se carga solo la primera vez) ---------- */
 const SEED_DATA = {"calls":[{"startTime":"2025-12-19T22:51:00.000Z","duration":1684000,"rate":1.6,"earned":44.906666666666666},{"startTime":"2025-12-19T22:51:00.000Z","duration":122000,"rate":1.6,"earned":3.2533333333333334},{"startTime":"2025-12-19T22:52:00.000Z","duration":302000,"rate":1.6,"earned":8.053333333333333},{"startTime":"2025-12-19T22:52:00.000Z","duration":1509000,"rate":1.6,"earned":40.24},{"startTime":"2025-12-19T22:52:00.000Z","duration":128000,"rate":1.6,"earned":3.4133333333333336},{"startTime":"2025-12-19T22:52:00.000Z","duration":3062000,"rate":1.6,"earned":81.65333333333334},{"startTime":"2025-12-19T22:52:00.000Z","duration":965000,"rate":1.6,"earned":25.733333333333334},{"startTime":"2025-12-19T22:52:00.000Z","duration":246000,"rate":1.6,"earned":6.56},{"startTime":"2025-12-19T22:52:00.000Z","duration":245000,"rate":1.6,"earned":6.533333333333333},{"startTime":"2025-12-19T22:52:00.000Z","duration":421000,"rate":1.6,"earned":11.226666666666667},{"startTime":"2025-12-19T22:52:00.000Z","duration":360000,"rate":1.6,"earned":9.600000000000001},{"startTime":"2025-12-19T22:52:00.000Z","duration":547000,"rate":1.6,"earned":14.586666666666668},{"startTime":"2025-12-19T22:53:00.000Z","duration":421000,"rate":1.6,"earned":11.226666666666667},{"startTime":"2025-12-19T22:53:00.000Z","duration":68000,"rate":1.6,"earned":1.8133333333333335},{"startTime":"2025-12-19T22:53:00.000Z","duration":909000,"rate":1.6,"earned":24.240000000000002},{"startTime":"2025-12-19T22:53:00.000Z","duration":68000,"rate":1.6,"earned":1.8133333333333335},{"startTime":"2025-12-19T22:53:00.000Z","duration":547000,"rate":1.6,"earned":14.586666666666668},{"startTime":"2025-12-19T22:53:00.000Z","duration":0,"rate":1.6,"earned":0},{"startTime":"2025-12-19T22:53:00.000Z","duration":300000,"rate":1.6,"earned":8},{"startTime":"2025-12-19T22:53:00.000Z","duration":9000,"rate":1.6,"earned":0.24},{"startTime":"2025-12-19T22:53:00.000Z","duration":1807000,"rate":1.6,"earned":48.18666666666667},{"startTime":"2025-12-19T22:53:00.000Z","duration":362000,"rate":1.6,"earned":9.653333333333334},{"startTime":"2025-12-19T22:53:00.000Z","duration":360000,"rate":1.6,"earned":9.600000000000001},{"startTime":"2025-12-19T22:54:00.000Z","duration":600000,"rate":1.6,"earned":16},{"startTime":"2025-12-19T22:54:00.000Z","duration":126000,"rate":1.6,"earned":3.3600000000000003},{"startTime":"2025-12-19T22:54:00.000Z","duration":1208000,"rate":1.6,"earned":32.21333333333333},{"startTime":"2025-12-19T22:54:00.000Z","duration":1626000,"rate":1.6,"earned":43.36000000000001},{"startTime":"2026-06-01T13:55:00.000Z","duration":3284000,"rate":1.83,"earned":100.162},{"startTime":"2026-06-01T15:11:00.000Z","duration":8679000,"rate":1.83,"earned":264.70950000000005},{"startTime":"2026-06-01T18:24:00.000Z","duration":12326000,"rate":1.83,"earned":375.94300000000004},{"startTime":"2026-06-02T14:00:00.000Z","duration":12550000,"rate":1.83,"earned":382.775},{"startTime":"2026-06-02T18:58:00.000Z","duration":2582000,"rate":1.83,"earned":78.751},{"startTime":"2026-06-02T20:11:00.000Z","duration":5560000,"rate":1.83,"earned":169.58},{"startTime":"2026-06-03T13:22:00.000Z","duration":6209000,"rate":1.83,"earned":189.3745},{"startTime":"2026-06-03T15:24:00.000Z","duration":12494000,"rate":1.83,"earned":381.067},{"startTime":"2026-06-03T20:36:00.000Z","duration":3600000,"rate":1.83,"earned":109.80000000000001},{"startTime":"2026-06-03T20:58:20.806Z","duration":3827386,"rate":1.83,"earned":116.735273},{"startTime":"2026-06-04T14:30:00.000Z","duration":5400000,"rate":1.83,"earned":164.70000000000002},{"startTime":"2026-06-04T16:00:00.000Z","duration":2340000,"rate":1.83,"earned":71.37},{"startTime":"2026-06-04T16:39:37.984Z","duration":3906316,"rate":1.83,"earned":119.142638},{"startTime":"2026-06-04T18:14:52.812Z","duration":12132,"rate":1.83,"earned":0.370026},{"startTime":"2026-06-04T18:15:16.279Z","duration":5428165,"rate":1.83,"earned":165.5590325},{"startTime":"2026-06-04T20:04:19.176Z","duration":6554171,"rate":1.83,"earned":199.9022155},{"startTime":"2026-06-05T15:09:27.590Z","duration":4800688,"rate":1.83,"earned":146.420984},{"startTime":"2026-06-05T16:51:33.390Z","duration":5373291,"rate":1.83,"earned":163.8853755},{"startTime":"2026-06-05T19:07:08.154Z","duration":3671695,"rate":1.83,"earned":111.9866975},{"startTime":"2026-06-05T20:28:14.818Z","duration":4361549,"rate":1.83,"earned":133.0272445},{"startTime":"2026-06-06T22:15:59.173Z","duration":4493268,"rate":1.83,"earned":137.04467400000001},{"startTime":"2026-06-08T13:28:16.972Z","duration":5567919,"rate":1.83,"earned":169.8215295},{"startTime":"2026-06-08T15:27:32.272Z","duration":8342126,"rate":1.83,"earned":254.43484300000003},{"startTime":"2026-06-08T18:26:47.431Z","duration":8013992,"rate":1.83,"earned":244.42675599999998},{"startTime":"2026-06-08T20:59:45.305Z","duration":2671153,"rate":1.83,"earned":81.4701665},{"startTime":"2026-06-09T15:17:00.000Z","duration":3600000,"rate":1.83,"earned":109.80000000000001},{"startTime":"2026-06-09T16:40:00.908Z","duration":6120416,"rate":1.83,"earned":186.67268800000002},{"startTime":"2026-06-09T18:58:08.647Z","duration":4431971,"rate":1.83,"earned":135.1751155},{"startTime":"2026-06-09T20:24:45.279Z","duration":5421590,"rate":1.83,"earned":165.358495},{"startTime":"2026-06-10T13:32:43.080Z","duration":15565763,"rate":1.83,"earned":474.7557715},{"startTime":"2026-06-10T18:35:09.470Z","duration":6410995,"rate":1.83,"earned":195.53534750000003},{"startTime":"2026-06-10T20:23:27.707Z","duration":432220,"rate":1.83,"earned":13.18271},{"startTime":"2026-06-10T20:54:49.112Z","duration":1478322,"rate":1.83,"earned":45.088821},{"startTime":"2026-06-10T21:20:37.611Z","duration":2831434,"rate":1.83,"earned":86.358737},{"startTime":"2026-06-11T14:38:22.704Z","duration":5093963,"rate":1.83,"earned":155.3658715},{"startTime":"2026-06-11T16:30:01.388Z","duration":13442721,"rate":1.83,"earned":410.00299050000007},{"startTime":"2026-06-13T21:32:34.444Z","duration":3465642,"rate":1.83,"earned":105.702081},{"startTime":"2026-06-13T22:47:48.903Z","duration":8446180,"rate":1.83,"earned":257.60849},{"startTime":"2026-06-14T01:24:04.008Z","duration":5572162,"rate":1.83,"earned":169.950941},{"startTime":"2026-06-15T13:37:10.153Z","duration":5027768,"rate":1.83,"earned":153.346924},{"startTime":"2026-06-15T15:25:35.481Z","duration":5958218,"rate":1.83,"earned":181.725649},{"startTime":"2026-06-15T17:05:22.033Z","duration":3576485,"rate":1.83,"earned":109.08279250000001},{"startTime":"2026-06-15T18:40:43.218Z","duration":6698983,"rate":1.83,"earned":204.3189815},{"startTime":"2026-06-15T20:50:18.754Z","duration":3116022,"rate":1.83,"earned":95.03867100000001},{"startTime":"2026-06-16T13:36:00.000Z","duration":600000,"rate":1.83,"earned":18.3},{"startTime":"2026-06-16T14:04:38.356Z","duration":4438890,"rate":1.83,"earned":135.386145},{"startTime":"2026-06-16T15:35:17.566Z","duration":8711380,"rate":1.83,"earned":265.69709},{"startTime":"2026-06-16T18:34:06.752Z","duration":7183138,"rate":1.83,"earned":219.085709},{"startTime":"2026-06-16T20:58:03.128Z","duration":2663871,"rate":1.83,"earned":81.2480655},{"startTime":"2026-06-17T14:08:00.000Z","duration":900000,"rate":1.83,"earned":27.450000000000003},{"startTime":"2026-06-17T14:15:20.351Z","duration":4404635,"rate":1.83,"earned":134.34136750000002},{"startTime":"2026-06-17T15:55:00.074Z","duration":3326882,"rate":1.83,"earned":101.46990100000001},{"startTime":"2026-06-17T16:50:32.419Z","duration":43196,"rate":1.83,"earned":1.317478},{"startTime":"2026-06-17T16:51:32.068Z","duration":133351,"rate":1.83,"earned":4.0672055},{"startTime":"2026-06-17T16:54:02.587Z","duration":174170,"rate":1.83,"earned":5.3121849999999995},{"startTime":"2026-06-17T16:57:16.069Z","duration":37433,"rate":1.83,"earned":1.1417065},{"startTime":"2026-06-17T16:58:18.081Z","duration":6582300,"rate":1.83,"earned":200.76015},{"startTime":"2026-06-17T19:27:28.592Z","duration":5724256,"rate":1.83,"earned":174.589808},{"startTime":"2026-06-17T21:26:00.735Z","duration":1282369,"rate":1.83,"earned":39.1122545},{"startTime":"2026-06-19T00:23:00.000Z","duration":5760000,"rate":1.83,"earned":175.68},{"startTime":"2026-06-20T00:24:00.000Z","duration":11828000,"rate":1.83,"earned":360.754},{"startTime":"2026-06-20T23:07:12.744Z","duration":5884532,"rate":1.83,"earned":179.478226},{"startTime":"2026-06-21T01:22:26.556Z","duration":2115130,"rate":1.83,"earned":64.511465},{"startTime":"2026-06-23T13:38:00.000Z","duration":840000,"rate":1.83,"earned":25.62},{"startTime":"2026-06-23T13:38:23.553Z","duration":5860918,"rate":1.83,"earned":178.757999},{"startTime":"2026-06-23T15:40:10.835Z","duration":9145120,"rate":1.83,"earned":278.92616000000004},{"startTime":"2026-06-23T18:50:44.831Z","duration":6251167,"rate":1.83,"earned":190.6605935},{"startTime":"2026-06-24T23:34:41.869Z","duration":5726077,"rate":1.83,"earned":174.6453485},{"startTime":"2026-06-25T14:00:00.000Z","duration":2700000,"rate":1.83,"earned":82.35000000000001},{"startTime":"2026-06-25T14:55:34.349Z","duration":2410856,"rate":1.83,"earned":73.531108},{"startTime":"2026-06-25T16:02:17.352Z","duration":4197892,"rate":1.83,"earned":128.035706},{"startTime":"2026-06-25T17:54:06.180Z","duration":2513720,"rate":1.83,"earned":76.66846},{"startTime":"2026-06-25T19:54:36.969Z","duration":1977548,"rate":1.83,"earned":60.315214000000005},{"startTime":"2026-06-25T20:00:00.000Z","duration":2280000,"rate":1.83,"earned":69.54},{"startTime":"2026-06-25T20:36:44.016Z","duration":3916229,"rate":1.83,"earned":119.4449845},{"startTime":"2026-06-26T14:00:00.000Z","duration":600000,"rate":1.83,"earned":18.3},{"startTime":"2026-06-26T14:11:46.761Z","duration":3895182,"rate":1.83,"earned":118.80305100000001},{"startTime":"2026-06-26T15:39:19.071Z","duration":4912404,"rate":1.83,"earned":149.82832200000001},{"startTime":"2026-06-26T17:33:28.796Z","duration":1409956,"rate":1.83,"earned":43.003658},{"startTime":"2026-06-27T22:22:55.324Z","duration":6656118,"rate":1.83,"earned":203.01159900000002},{"startTime":"2026-06-28T01:28:00.000Z","duration":900000,"rate":1.83,"earned":27.450000000000003},{"startTime":"2026-06-28T01:28:04.639Z","duration":3519434,"rate":1.83,"earned":107.342737},{"startTime":"2026-06-29T14:25:00.000Z","duration":960000,"rate":1.83,"earned":29.28},{"startTime":"2026-06-29T14:44:00.971Z","duration":3710026,"rate":1.83,"earned":113.155793},{"startTime":"2026-06-29T16:10:25.211Z","duration":9834311,"rate":1.83,"earned":299.9464855},{"startTime":"2026-06-29T19:36:46.067Z","duration":7768252,"rate":1.83,"earned":236.931686},{"startTime":"2026-06-29T22:12:18.777Z","duration":1966154,"rate":1.83,"earned":59.967697},{"startTime":"2026-07-01T14:27:44.910Z","duration":7035341,"rate":1.83,"earned":214.57790050000003},{"startTime":"2026-07-01T16:43:39.024Z","duration":4958872,"rate":1.83,"earned":151.245596},{"startTime":"2026-07-01T18:45:28.731Z","duration":7055674,"rate":1.83,"earned":215.198057},{"startTime":"2026-07-01T21:02:11.919Z","duration":6000204,"rate":1.83,"earned":183.006222},{"startTime":"2026-07-02T14:30:19.500Z","duration":4570039,"rate":1.83,"earned":139.3861895},{"startTime":"2026-07-02T16:21:01.684Z","duration":1526000,"rate":1.83,"earned":46.543},{"startTime":"2026-07-02T16:54:39.088Z","duration":5985696,"rate":1.83,"earned":182.563728},{"startTime":"2026-07-02T18:34:37.124Z","duration":971452,"rate":1.83,"earned":29.629286000000004},{"startTime":"2026-07-02T19:33:50.306Z","duration":7256464,"rate":1.83,"earned":221.32215200000002},{"startTime":"2026-07-02T21:52:17.206Z","duration":4661666,"rate":1.83,"earned":142.180813},{"startTime":"2026-07-03T14:27:00.502Z","duration":6001564,"rate":1.83,"earned":183.04770200000002},{"startTime":"2026-07-03T16:22:53.894Z","duration":7891366,"rate":1.83,"earned":240.68666299999998},{"startTime":"2026-07-03T19:04:09.183Z","duration":6671508,"rate":1.83,"earned":203.480994},{"startTime":"2026-07-03T21:11:59.175Z","duration":5635060,"rate":1.83,"earned":171.86933},{"startTime":"2026-07-06T14:25:00.000Z","duration":360000,"rate":1.83,"earned":10.98},{"startTime":"2026-07-06T14:32:44.552Z","duration":5812539,"rate":1.83,"earned":177.28243949999998},{"startTime":"2026-07-06T16:34:33.559Z","duration":7887124,"rate":1.83,"earned":240.55728200000001},{"startTime":"2026-07-06T19:22:29.952Z","duration":9304506,"rate":1.83,"earned":283.787433},{"startTime":"2026-07-06T22:18:16.914Z","duration":1634442,"rate":1.83,"earned":49.850481},{"startTime":"2026-07-07T14:27:00.163Z","duration":5192998,"rate":1.83,"earned":158.386439},{"startTime":"2026-07-07T16:09:55.974Z","duration":8084453,"rate":1.83,"earned":246.5758165},{"startTime":"2026-07-07T21:53:00.000Z","duration":9240000,"rate":1.83,"earned":281.82},{"startTime":"2026-07-07T21:53:46.711Z","duration":3113348,"rate":1.83,"earned":94.957114},{"startTime":"2026-07-08T16:15:16.623Z","duration":8078885,"rate":1.83,"earned":246.40599250000002},{"startTime":"2026-07-08T19:00:41.091Z","duration":10183001,"rate":1.83,"earned":310.5815305},{"startTime":"2026-07-08T22:09:07.532Z","duration":2492571,"rate":1.83,"earned":76.0234155}],"rates":[{"name":"HQ","amount":1.6},{"name":"L4 HQ","amount":1.83}],"dailyGoal":{"amount":750}};
 
@@ -2482,17 +2702,23 @@ function convertCallsData(data){
   }).filter(e => e.workedMinutes > 0);
 }
 
+/* seed data is call/per-minute shaped, so on a brand-new browser it seeds the
+   Propio profile directly (not whatever company happens to be active). */
 const SEED_MERGE_FLAG = 'raya_seed_merged_v2';
 if(SEED_DATA && !localStorage.getItem(SEED_MERGE_FLAG)){
   const seedEntries = convertCallsData(SEED_DATA);
-  const existingIds = new Set(entries.map(e=>String(e.id)));
+  const propioEntriesKey = LS_ENTRIES + '__PROPIO';
+  let propioEntries = [];
+  try{ propioEntries = JSON.parse(localStorage.getItem(propioEntriesKey)) || []; }catch(e){}
+  const existingIds = new Set(propioEntries.map(e=>String(e.id)));
   const missing = seedEntries.filter(e=>!existingIds.has(String(e.id)));
   if(missing.length){
-    entries = entries.concat(missing);
-    saveEntries(entries);
+    propioEntries = propioEntries.concat(missing);
+    localStorage.setItem(propioEntriesKey, JSON.stringify(propioEntries));
   }
-  if(SEED_DATA.dailyGoal && typeof SEED_DATA.dailyGoal.amount === 'number' && !localStorage.getItem(LS_GOAL)){
-    goal = SEED_DATA.dailyGoal.amount; saveNum(LS_GOAL, goal);
+  const propioGoalKey = LS_GOAL + '__PROPIO';
+  if(SEED_DATA.dailyGoal && typeof SEED_DATA.dailyGoal.amount === 'number' && !localStorage.getItem(propioGoalKey)){
+    localStorage.setItem(propioGoalKey, String(SEED_DATA.dailyGoal.amount));
   }
   localStorage.setItem(SEED_MERGE_FLAG,'1');
   localStorage.setItem('timeledger_seeded','1');
@@ -2512,7 +2738,7 @@ if(!sessionStorage.getItem('raya_splash_shown')){
 }
 
 (function(){
-  const last = localStorage.getItem(LS_LASTBACKUP);
+  const last = localStorage.getItem(nsKey(LS_LASTBACKUP));
   if(entries.length === 0) return;
   if(!last){
     setTimeout(()=> showToast('Tip: exporta un respaldo de vez en cuando. Por si el navegador amanece de malas.', 'peri', {action:'Exportar', onAction: doExport, ttl: 12000}), 3000);
