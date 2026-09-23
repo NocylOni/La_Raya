@@ -1,0 +1,47 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'mx.raya.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "mx.raya.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            // sin firma de release: el workflow produce un APK debug instalable
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // el HTML ya viene comprimido donde importa; no recomprimir woff2
+    androidResources {
+        noCompress 'woff2'
+    }
+}
+
+dependencies { }
+
+/*
+ * Regenera assets/index.html desde "La Raya.html" antes de cada build, para que
+ * el APK nunca se arme con una copia vieja (o sin copia). Vale igual desde CI
+ * que desde Android Studio.
+ */
+tasks.register('prepareAssets', Exec) {
+    workingDir rootProject.projectDir.parentFile
+    commandLine 'node', 'tools/prepare-assets.mjs'
+}
+tasks.matching { it.name.startsWith('generate') && it.name.endsWith('Assets') }.configureEach {
+    dependsOn 'prepareAssets'
+}
+preBuild.dependsOn 'prepareAssets'

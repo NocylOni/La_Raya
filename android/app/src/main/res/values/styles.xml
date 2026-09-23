@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- mismo fondo que el HTML para que no haya destello blanco al abrir -->
+    <style name="RayaTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/raya_bg</item>
+        <item name="android:statusBarColor">@color/raya_bg</item>
+        <item name="android:navigationBarColor">@color/raya_bg</item>
+    </style>
+</resources>

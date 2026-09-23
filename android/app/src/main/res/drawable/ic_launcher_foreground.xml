@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Las dos rayas diagonales del logo, sobre el degradado cian→índigo.
+     Lienzo adaptativo de 108dp; la zona segura es el centro de 72dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- placa redondeada con degradado -->
+    <path android:pathData="M30,26 L78,26 A10,10 0 0 1 88,36 L88,72 A10,10 0 0 1 78,82 L30,82 A10,10 0 0 1 20,72 L20,36 A10,10 0 0 1 30,26 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:startX="20" android:startY="26"
+                android:endX="88" android:endY="82"
+                android:type="linear">
+                <item android:offset="0" android:color="#FF22D3EE" />
+                <item android:offset="1" android:color="#FF818CF8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- raya clara -->
+    <path
+        android:pathData="M45,20 L56,20 L43,88 L32,88 Z"
+        android:fillColor="#F2FFFFFF" />
+
+    <!-- raya oscura -->
+    <path
+        android:pathData="M63,20 L72,20 L59,88 L50,88 Z"
+        android:fillColor="#73101A2B" />
+</vector>

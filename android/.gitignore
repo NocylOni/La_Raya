@@ -1,0 +1,9 @@
+# salidas de build
+build/
+.gradle/
+local.properties
+*.iml
+.idea/
+
+# generado por tools/prepare-assets.mjs desde "La Raya.html" (la fuente de verdad)
+app/src/main/assets/index.html
